@@ -20,6 +20,6 @@ python pdfmenu.py
 Python学習の一環として作成したツールです。
 
 ## 今後の改良予定
-GUI化
-Webアプリ化
-Renderへのデプロイ
+- GUI化
+- Webアプリ化
+- Renderへのデプロイ
