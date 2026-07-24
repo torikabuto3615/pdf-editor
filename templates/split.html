@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}PDF分割 | PDFツールキット{% endblock %}
+
+{% block body_class %}tool-split{% endblock %}
+
+{% block head_extra %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<span class="eyebrow">SPLIT</span>
+<h1>PDF分割</h1>
+<p class="tool-lead">1ページごとに分割し、まとめてZIPでダウンロードします。</p>
+
+<form action="/split/run" method="post" enctype="multipart/form-data">
+
+    <label for="pdfFile">PDFファイル</label>
+
+    <label for="pdfFile" class="dropzone" id="dropzone" data-default-label="クリックまたはドラッグしてPDFを選択">
+        <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg>
+        <span class="dropzone-label">クリックまたはドラッグしてPDFを選択</span>
+        <span class="dropzone-sub">.pdf ファイルに対応(1つ)</span>
+    </label>
+
+    <input
+        type="file"
+        name="pdf_file"
+        id="pdfFile"
+        accept=".pdf"
+        class="hidden-file-input"
+        required
+    >
+
+    <div id="fileInfo" class="file-info" style="display:none;"></div>
+
+    <button type="submit">
+        分割する
+    </button>
+
+</form>
+
+<a href="/" class="back-link">← メニューへ戻る</a>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/preview.js') }}"></script>
+<script>
+    setupDropzone('dropzone', 'pdfFile');
+    setupPdfPreview('pdfFile', 'fileInfo');
+</script>
+{% endblock %}

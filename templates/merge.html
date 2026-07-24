@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}PDF結合 | PDFツールキット{% endblock %}
+
+{% block body_class %}tool-merge{% endblock %}
+
+{% block head_extra %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<span class="eyebrow">MERGE</span>
+<h1>PDF結合</h1>
+<p class="tool-lead">複数のPDFを選んだ順に1つのファイルへまとめます。</p>
+
+<form action="/merge/run" method="post" enctype="multipart/form-data">
+
+    <div>
+        <label for="pdfFiles">PDFファイル(2つ以上)</label>
+        <p class="field-hint">Ctrlキー(Macは⌘キー)を押しながら選ぶと複数選択できます。</p>
+    </div>
+
+    <label for="pdfFiles" class="dropzone" id="dropzone" data-default-label="クリックまたはドラッグしてPDFを選択(2つ以上)">
+        <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10.5V16a4 4 0 0 1-4 4H8a5 5 0 0 1-5-5V7a3.5 3.5 0 0 1 7 0v9a2 2 0 0 1-4 0V8"/></svg>
+        <span class="dropzone-label">クリックまたはドラッグしてPDFを選択(2つ以上)</span>
+        <span class="dropzone-sub">.pdf ファイルに対応</span>
+    </label>
+
+    <input
+        type="file" name="pdf_files" id="pdfFiles" accept=".pdf"
+        class="hidden-file-input"
+        multiple
+        required
+    >
+
+    <div id="fileInfo" class="file-info" style="display:none;"></div>
+
+    <button type="submit">
+        結合する
+    </button>
+
+</form>
+
+<a href="/" class="back-link">← メニューへ戻る</a>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/preview.js') }}"></script>
+<script>
+    setupDropzone('dropzone', 'pdfFiles');
+    setupPdfPreview('pdfFiles', 'fileInfo');
+</script>
+{% endblock %}

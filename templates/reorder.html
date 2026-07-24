@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}並び替え・回転 | PDFツールキット{% endblock %}
+
+{% block body_class %}tool-reorder{% endblock %}
+
+{% block container_class %}container-wide{% endblock %}
+
+{% block head_extra %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<span class="eyebrow">REORDER</span>
+<h1>PDF並び替え・回転</h1>
+<p class="tool-lead">ページを並べ替えたり、向きを回転したりして保存します。</p>
+
+<form id="reorderForm" action="/reorder/run" method="post" enctype="multipart/form-data">
+
+    <label for="pdfFile">PDFファイル</label>
+
+    <label for="pdfFile" class="dropzone" id="dropzone" data-default-label="クリックまたはドラッグしてPDFを選択">
+        <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2 21 6 17 10M21 6H9a4 4 0 0 0-4 4v1M7 22 3 18l4-4M3 18h12a4 4 0 0 0 4-4v-1"/></svg>
+        <span class="dropzone-label">クリックまたはドラッグしてPDFを選択</span>
+        <span class="dropzone-sub">.pdf ファイルに対応(1つ)</span>
+    </label>
+
+    <input
+        type="file"
+        name="pdf_file"
+        id="pdfFile"
+        accept=".pdf"
+        class="hidden-file-input"
+        required
+    >
+
+    <div id="fileInfo" class="file-info" style="display:none;"></div>
+
+    <div id="loadingMsg" class="loading-msg" style="display:none;">
+        <span class="spinner" aria-hidden="true"></span>
+        ページを読み込んでいます...
+    </div>
+
+    <p id="helpText" class="help-text" style="display:none;">
+        サムネイルをドラッグして順番を入れ替えられます。「↻ 回転」ボタンでページを90°ずつ回転できます。
+    </p>
+
+    <div id="thumbGrid" class="thumb-grid"></div>
+
+    <input type="hidden" name="page_order" id="pageOrderInput">
+
+    <button type="submit" id="submitBtn" disabled>
+        この内容で保存する
+    </button>
+
+</form>
+
+<a href="/" class="back-link">← メニューへ戻る</a>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/preview.js') }}"></script>
+<script>
+    const fileInput = document.getElementById('pdfFile');
+    const thumbGrid = document.getElementById('thumbGrid');
+    const fileInfo = document.getElementById('fileInfo');
+    const loadingMsg = document.getElementById('loadingMsg');
+    const helpText = document.getElementById('helpText');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('reorderForm');
+    const pageOrderInput = document.getElementById('pageOrderInput');
+
+    setupDropzone('dropzone', 'pdfFile');
+
+    let dragSrc = null;
+
+    fileInput.addEventListener('change', async () => {
+        const file = fileInput.files[0];
+
+        thumbGrid.innerHTML = '';
+        submitBtn.disabled = true;
+        fileInfo.style.display = 'none';
+        helpText.style.display = 'none';
+
+        if (!file) {
+            return;
+        }
+
+        loadingMsg.style.display = 'flex';
+
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            const numPages = pdf.numPages;
+
+            fileInfo.innerHTML = `📄 ${file.name}<span class="page-count">（${numPages}ページ）</span>`;
+            fileInfo.style.display = 'block';
+
+            for (let i = 1; i <= numPages; i++) {
+                const page = await pdf.getPage(i);
+                const viewport = page.getViewport({ scale: 0.45 });
+
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const ctx = canvas.getContext('2d');
+                await page.render({ canvasContext: ctx, viewport }).promise;
+
+                const thumb = document.createElement('div');
+                thumb.className = 'thumb';
+                thumb.draggable = true;
+                thumb.dataset.index = i - 1;
+                thumb.dataset.rotation = 0;
+
+                const imgWrap = document.createElement('div');
+                imgWrap.className = 'thumb-img-wrap';
+                imgWrap.appendChild(canvas);
+
+                const label = document.createElement('div');
+                label.className = 'thumb-label';
+                label.textContent = `ページ ${i}`;
+
+                const rotateBtn = document.createElement('button');
+                rotateBtn.type = 'button';
+                rotateBtn.className = 'rotate-btn';
+                rotateBtn.textContent = '↻ 回転';
+                rotateBtn.addEventListener('click', () => {
+                    const current = parseInt(thumb.dataset.rotation, 10);
+                    const next = (current + 90) % 360;
+                    thumb.dataset.rotation = next;
+                    canvas.style.transform = `rotate(${next}deg)`;
+                });
+
+                thumb.appendChild(imgWrap);
+                thumb.appendChild(label);
+                thumb.appendChild(rotateBtn);
+
+                thumb.addEventListener('dragstart', () => {
+                    dragSrc = thumb;
+                    thumb.classList.add('dragging');
+                });
+
+                thumb.addEventListener('dragend', () => {
+                    thumb.classList.remove('dragging');
+                });
+
+                thumb.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                });
+
+                thumb.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    if (dragSrc && dragSrc !== thumb) {
+                        const thumbs = Array.from(thumbGrid.children);
+                        const srcIdx = thumbs.indexOf(dragSrc);
+                        const tgtIdx = thumbs.indexOf(thumb);
+
+                        if (srcIdx < tgtIdx) {
+                            thumbGrid.insertBefore(dragSrc, thumb.nextSibling);
+                        } else {
+                            thumbGrid.insertBefore(dragSrc, thumb);
+                        }
+                    }
+                });
+
+                thumbGrid.appendChild(thumb);
+            }
+
+            helpText.style.display = 'block';
+            submitBtn.disabled = false;
+        } catch (err) {
+            fileInfo.innerHTML = '⚠️ PDFの読み込みに失敗しました（壊れたファイルの可能性があります）';
+            fileInfo.style.display = 'block';
+        } finally {
+            loadingMsg.style.display = 'none';
+        }
+    });
+
+    form.addEventListener('submit', () => {
+        const order = Array.from(thumbGrid.children).map((thumb) => ({
+            index: parseInt(thumb.dataset.index, 10),
+            rotation: parseInt(thumb.dataset.rotation, 10)
+        }));
+        pageOrderInput.value = JSON.stringify(order);
+    });
+</script>
+{% endblock %}

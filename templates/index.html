@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}PDFツールキット{% endblock %}
+
+{% block body_class %}home{% endblock %}
+
+{% block container_class %}home{% endblock %}
+
+{% block content %}
+
+<span class="eyebrow">PDF TOOLKIT</span>
+<h1>PDFツールキット</h1>
+<p class="subtitle">結合・分割・削除・並び替え。よく使う作業を、色分けされた4つの引き出しにまとめました。</p>
+
+<div class="folder-grid">
+
+    <a href="/merge" class="folder-card card-merge">
+        <div class="folder-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10.5V16a4 4 0 0 1-4 4H8a5 5 0 0 1-5-5V7a3.5 3.5 0 0 1 7 0v9a2 2 0 0 1-4 0V8"/></svg>
+            MERGE
+        </div>
+        <div class="folder-body">
+            <h2>PDF結合</h2>
+            <p>複数のPDFを1つにまとめます</p>
+        </div>
+    </a>
+
+    <a href="/split" class="folder-card card-split">
+        <div class="folder-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg>
+            SPLIT
+        </div>
+        <div class="folder-body">
+            <h2>PDF分割</h2>
+            <p>ページごとに分割します</p>
+        </div>
+    </a>
+
+    <a href="/delete" class="folder-card card-delete">
+        <div class="folder-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14Z"/></svg>
+            DELETE
+        </div>
+        <div class="folder-body">
+            <h2>PDF削除</h2>
+            <p>指定ページを削除します</p>
+        </div>
+    </a>
+
+    <a href="/reorder" class="folder-card card-reorder">
+        <div class="folder-tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2 21 6 17 10M21 6H9a4 4 0 0 0-4 4v1M7 22 3 18l4-4M3 18h12a4 4 0 0 0 4-4v-1"/></svg>
+            REORDER
+        </div>
+        <div class="folder-body">
+            <h2>並び替え・回転</h2>
+            <p>ページの順番変更や回転ができます</p>
+        </div>
+    </a>
+
+</div>
+
+{% endblock %}

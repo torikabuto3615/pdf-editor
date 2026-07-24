@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}PDF削除 | PDFツールキット{% endblock %}
+
+{% block body_class %}tool-delete{% endblock %}
+
+{% block head_extra %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<span class="eyebrow">DELETE</span>
+<h1>PDFページ削除</h1>
+<p class="tool-lead">指定した1ページだけを取り除いた新しいPDFを作成します。</p>
+
+<form action="/delete/run" method="post" enctype="multipart/form-data">
+
+    <label for="pdfFile">PDFファイル</label>
+
+    <label for="pdfFile" class="dropzone" id="dropzone" data-default-label="クリックまたはドラッグしてPDFを選択">
+        <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14Z"/></svg>
+        <span class="dropzone-label">クリックまたはドラッグしてPDFを選択</span>
+        <span class="dropzone-sub">.pdf ファイルに対応(1つ)</span>
+    </label>
+
+    <input
+        type="file"
+        name="pdf_file"
+        id="pdfFile"
+        accept=".pdf"
+        class="hidden-file-input"
+        required
+    >
+
+    <div id="fileInfo" class="file-info" style="display:none;"></div>
+
+    <label for="pageNumber">削除するページ番号</label>
+
+    <input
+        type="number"
+        name="page_number"
+        id="pageNumber"
+        min="1"
+        required
+    >
+
+    <button type="submit">
+        削除する
+    </button>
+
+</form>
+
+<a href="/" class="back-link">← メニューへ戻る</a>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/preview.js') }}"></script>
+<script>
+    setupDropzone('dropzone', 'pdfFile');
+    setupPdfPreview('pdfFile', 'fileInfo');
+
+    // ページ数が分かったら、ページ番号入力の上限を自動設定する
+    document.getElementById('pdfFile').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        const pageNumberInput = document.getElementById('pageNumber');
+        if (!file) return;
+        try {
+            const pageCount = await getPdfPageCount(file);
+            pageNumberInput.max = pageCount;
+        } catch (err) {
+            // プレビュー側で既にエラー表示しているため、ここでは何もしない
+        }
+    });
+</script>
+{% endblock %}
